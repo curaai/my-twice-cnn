@@ -1,5 +1,7 @@
 import tensorflow as tf
 # import matplotlib.pyplot as plt
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 from tensorflow.examples.tutorials.mnist import input_data
 
@@ -143,10 +145,9 @@ for epoch in range(training_epochs):
         batch_xs, batch_ys = mnist.train.next_batch(batch_size)
         c, _ = m1.train(batch_xs, batch_ys)
         avg_cost += c / total_batch
-
-    print('Epoch:', '%04d' % (epoch + 1), 'cost =', '{:.9f}'.format(avg_cost))
+        print('Epoch:', '%04d' % (epoch + 1), 'cost =', '{:.9f}'.format(avg_cost))
 
 print('Learning Finished!')
 
 # Test model and check accuracy
-print('Accuracy:', m1.get_accuracy(mnist.test.images, mnist.test.labels))
+

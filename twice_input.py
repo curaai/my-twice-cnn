@@ -4,7 +4,7 @@ from PIL import Image
 from sklearn.utils import shuffle
 
 IMAGE_SIZE = 3072
-LABEL_SIZE = 844
+LABEL = 841
 
 
 def get_feed_data():
@@ -17,9 +17,9 @@ def get_feed_data():
     label = np.ones((data_len, ), dtype=int)
 
     # 0 : jeongyeon, 1 : momo, 2: nayeon
-    label[:248] = 0
-    label[248: 547] = 1
-    label[547: 844] = 2
-
+    label[:246] = 0
+    label[246: 544] = 1
+    label[547: 841] = 2
+    print(len(label))
     data, label = shuffle(img_matrix, label, random_state=4)
     return data, label
