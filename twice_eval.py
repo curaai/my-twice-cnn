@@ -8,27 +8,22 @@ import twice_input
 import twice
 
 if __name__ == '__main__':
-    sess = tf.Session()
-    m = twice.Twice(sess, 0.2)
+    data = twice_input.read_data_sets(100)
 
-    sess.run(tf.global_variables_initializer())
+    BATCH_SIZE = 10
 
-    print('start traning')
+    with tf.Session() as sess:
+        m = twice.Twice(sess, 1e-4)
+        sess.run(tf.global_variables_initializer())
 
-    data, label = twice_input.get_feed_data()
+        for i in range(1000):
+            x_batch, y_batch = data.train.next_batch(BATCH_SIZE)
+            x_batch.reshape(BATCH_SIZE, twice_input.IMAGE_SIZE)
 
-    avg_cost = 0
-    for i in range(twice_input.LABEL):
-        Y = np.zeros([3])
-        Y[label[i]] = 1
+            c, _ = m.train(x_batch, y_batch)
 
-        c, _ = m.train(data[i].reshape(1, twice_input.IMAGE_SIZE), Y.reshape(1, 3))
-        # avg_cost += c / twice_input.LABEL
+            if i % 40 == 0:
+                m.saver.save(sess, './model.ckpt')
+                print(c)
 
-        print('Epoch:', '%04d' % (i + 1), 'cost =', '{:.9f}'.format(c))
-
-    print('Learning Finished')
-
-    img = Image.open('test/1.jpg')
-    img = np.array(img.resize((32, 32))).flatten().reshape(1, 3072)
-    print(m.predict(img))
+        print('Learning Finish')
