@@ -17,7 +17,7 @@ class Twice:
     def inference(self):
         with tf.variable_scope('twice'):
             self.X = tf.placeholder(tf.float32, [None, 32, 32, 3])
-            self.label = tf.placeholder(tf.float32, [None, 3])
+            self.label = tf.placeholder(tf.float32, [None, twice_input.CLASSES])
             # images = 32 x 32 x 3
 
             # convolution layer 1

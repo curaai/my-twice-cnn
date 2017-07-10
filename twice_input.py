@@ -18,7 +18,6 @@ def get_feed_data():
 
     for index in range(len(files)):
         img = imread(files[index])
-        img = img.flatten()
 
         label = np.zeros(CLASSES)
         if index < length[0]:
@@ -49,22 +48,18 @@ class DataSet:
         self.labels = labels
 
         self.num_examples = images.shape[0]
-
+        self.batch_count = 0
         self.epoch_complete = 0
-        self.index_in_epoch = 0
 
     def next_batch(self, batch_size):
-        start = self.index_in_epoch
-        self.index_in_epoch += batch_size
+        mask = np.random.choice(self.num_examples, batch_size)
+        self.batch_count += 1
 
-        if self.index_in_epoch > self.num_examples:
+        if self.batch_count * batch_size >= self.num_examples:
             self.epoch_complete += 1
-            start = 0
-            self.index_in_epoch = batch_size
+            self.batch_count = 0
 
-        end = self.index_in_epoch
-
-        return self.images[start:end], self.labels[start: end]
+        return self.images[mask], self.labels[mask]
 
 
 def read_data_sets(test=0):
@@ -85,3 +80,5 @@ def read_data_sets(test=0):
     data_sets.train = DataSet(train_images, train_labels)
 
     return data_sets
+
+
