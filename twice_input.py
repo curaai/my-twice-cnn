@@ -4,28 +4,26 @@ from scipy.misc import imread
 from sklearn.utils import shuffle
 
 IMAGE_SIZE  = 3072
-CLASSES     = 3
+CLASSES     = 4
 
 
-def get_feed_data():
-    directories = os.listdir('data')
-    files = ['data/' + directory + '/' +file for directory in directories for file in os.listdir('data/' + directory)]
+def get_feed_data(path):
+    directories = os.listdir(path)
+    files = [path + '/' + directory + '/' + file for directory in directories
+             for file in os.listdir(path + '/' + directory)]
 
     images = list()
     labels = list()
-
-    length = [len(os.listdir('data/' + directory)) for directory in directories]
+    length = [len(os.listdir(path + '/' + directory)) for directory in directories]
 
     for index in range(len(files)):
         img = imread(files[index])
 
         label = np.zeros(CLASSES)
-        if index < length[0]:
-            label[0] = 1
-        elif index < sum(length[:2]):
-            label[1] = 1
-        else:
-            label[2] = 1
+        for i in range(CLASSES):
+            if index < sum(length[:i+1]):
+                label[i] = 1
+                break
 
         images.append(img)
         labels.append(label)
@@ -34,7 +32,6 @@ def get_feed_data():
     labels = np.array(labels)
 
     images, labels = shuffle(images, labels, random_state=4)
-
     return images, labels
 
 
@@ -48,27 +45,30 @@ class DataSet:
         self.labels = labels
 
         self.num_examples = images.shape[0]
-        self.batch_count = 0
+        self.index_in_epoch = 0
         self.epoch_complete = 0
 
     def next_batch(self, batch_size):
-        mask = np.random.choice(self.num_examples, batch_size)
-        self.batch_count += 1
+        start = self.index_in_epoch
+        self.index_in_epoch += batch_size
 
-        if self.batch_count * batch_size >= self.num_examples:
+        if self.index_in_epoch > self.num_examples:
             self.epoch_complete += 1
-            self.batch_count = 0
+            start = 0
+            self.index_in_epoch = batch_size
 
-        return self.images[mask], self.labels[mask]
+        end = self.index_in_epoch
+
+        return self.images[start:end], self.labels[start:end]
 
 
-def read_data_sets(test=0):
+def read_data_sets(data_path, test=0):
     class DataSets(object):
         pass
 
     data_sets = DataSets()
 
-    images, labels = get_feed_data()
+    images, labels = get_feed_data(data_path)
 
     test_images = images[:test]
     test_labels = labels[:test]

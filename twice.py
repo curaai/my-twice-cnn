@@ -70,7 +70,7 @@ class Twice:
             '''
 
             # final layer 4
-            final4 = tf.get_variable('final4', shape=[IMAGE_SIZE, 3],
+            final4 = tf.get_variable('final4', shape=[IMAGE_SIZE, twice_input.CLASSES],
                                      initializer=tf.contrib.layers.xavier_initializer())
             logit = tf.matmul(local3, final4)
 
