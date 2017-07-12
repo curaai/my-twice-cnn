@@ -21,24 +21,21 @@ class Twice:
             # images = 32 x 32 x 3
 
             # convolution layer 1
-            kernel1 = tf.Variable(tf.random_normal([5, 5, 3, 64], stddev=5e-2), name='kern1')
-            bias1 = tf.Variable(tf.random_normal([64]), 'bisa1')
+            kernel1 = tf.Variable(tf.random_normal([5, 5, 3, 32], stddev=5e-2), name='kern1')
+            bias1 = tf.Variable(tf.random_normal([32]), 'bisa1')
             conv1 = tf.nn.conv2d(self.X, kernel1, [1, 1, 1, 1], padding='SAME')
             conv1 = tf.nn.bias_add(conv1, bias1)
 
             conv1 = tf.nn.relu(conv1, name='conv1')
 
-            pool1 = tf.nn.max_pool(conv1, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1],
-                                   padding='SAME', name='pool1')
-            norm1 = tf.nn.lrn(pool1, 4, alpha=0.001 / 9.0, beta=0.75, name='norm1')
+            norm1 = tf.nn.lrn(conv1, 4, alpha=0.001 / 9.0, beta=0.75, name='norm1')
 
             '''
-            conv1 result : 32 x 32 x 64
-            pool1 result : 16 x 16 x 64
+            conv1 result : 32 x 32 x 32
             '''
 
             # convolution layer 2
-            kernel2 = tf.Variable(tf.random_normal([5, 5, 64, 64], stddev=5e-2), name='kern2')
+            kernel2 = tf.Variable(tf.random_normal([5, 5, 32, 64], stddev=5e-2), name='kern2')
             bias2 = tf.Variable(tf.random_normal([64]), name='bias2')
             conv2 = tf.nn.conv2d(norm1, kernel2, [1, 1, 1, 1], padding='SAME')
             conv2 = tf.nn.bias_add(conv2, bias2)
@@ -50,33 +47,55 @@ class Twice:
             pool2 = tf.nn.max_pool(norm2, ksize=[1, 2, 2, 1],
                                    strides=[1, 2, 2, 1], padding='SAME', name='pool2')
             '''
-            conv2 result : 16 x 16 x 64
-            pool2 result : 8 x 8 x 64
+            conv2 result : 32 x 32 x 64
+            pool2 result : 16 x 16 x 64
             '''
 
-            # local layer 3
-            reshape = tf.reshape(pool2, [-1, 8 * 8 * 64])
-            kernel3 = tf.get_variable("local3", shape=[8 * 8 * 64, IMAGE_SIZE],
+            # convolution layer 3
+            kernel3 = tf.Variable(tf.random_normal([5, 5, 64, 128], stddev=5e-2), name='kern3')
+            bias3 = tf.Variable(tf.random_normal([128]), name='bias3')
+            conv3 = tf.nn.conv2d(pool2, kernel3, [1, 1, 1, 1], padding='SAME')
+            conv3 = tf.nn.bias_add(conv3, bias3)
+
+            conv3 = tf.nn.relu(conv3, name='conv3')
+
+            norm3 = tf.nn.lrn(conv3, 4, bias=1.0, alpha=0.001 / 9.0, beta=0.75,
+                              name='norm3')
+            pool3 = tf.nn.max_pool(norm3, ksize=[1, 2, 2, 1],
+                                   strides=[1, 2, 2, 1], padding='SAME', name='pool3')
+            '''
+            conv2 result : 16 x 16 x 128
+            pool2 result : 8 x 8 x 128
+            '''
+
+
+            # local layer 4
+            reshape = tf.reshape(pool3, [-1, 8 * 8 * 128])
+            kernel4 = tf.get_variable("kern4", shape=[8 * 8 * 128, 1024],
                                       initializer=tf.contrib.layers.xavier_initializer())
-            bias3 = tf.Variable(tf.random_normal([IMAGE_SIZE]), name='bias3')
-            local3 = tf.matmul(reshape, kernel3)
-            local3 = tf.nn.bias_add(local3, bias3)
+            bias4 = tf.Variable(tf.random_normal([1024]), name='bias4')
+            local4 = tf.matmul(reshape, kernel4)
+            local4 = tf.nn.bias_add(local4, bias4)
 
-            local3 = tf.nn.relu(local3, name='local3')
+            local4 = tf.nn.relu(local4, name='local4')
 
             '''
-            reshape result : 4096
-            kernel3 result : 3072
+            reshape result : 8192
+            kernel3 result : 1024
             '''
 
-            # final layer 4
-            final4 = tf.get_variable('final4', shape=[IMAGE_SIZE, twice_input.CLASSES],
+            # local layer 5
+            kernel5 = tf.get_variable('kern5', shape=[1024, 128],
+                                      initializer=tf.contrib.layers.xavier_initializer())
+            local5 = tf.nn.relu(tf.matmul(local4, kernel5))
+
+            # final layer 5
+            final6 = tf.get_variable('final6', shape=[128, twice_input.CLASSES],
                                      initializer=tf.contrib.layers.xavier_initializer())
-            logit = tf.matmul(local3, final4)
+            logit = tf.matmul(local5, final6)
 
             self.saver = tf.train.Saver()
             self.logit = logit
-
 
         self.cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(
             logits=self.logit, labels=self.label))

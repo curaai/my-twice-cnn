@@ -58,7 +58,6 @@ class DataSet:
             self.index_in_epoch = batch_size
 
         end = self.index_in_epoch
-
         return self.images[start:end], self.labels[start:end]
 
 
