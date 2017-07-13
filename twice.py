@@ -1,4 +1,5 @@
 import tensorflow as tf
+import numpy as np
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
@@ -96,6 +97,7 @@ class Twice:
 
             self.saver = tf.train.Saver()
             self.logit = logit
+            self.pred = tf.nn.softmax(self.logit)
 
         self.cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(
             logits=self.logit, labels=self.label))
@@ -115,4 +117,4 @@ class Twice:
         return self.sess.run(self.accuracy, feed_dict={self.X: image, self.label: label})
 
     def predict(self, image):
-        return self.sess.run(self.logit, feed_dict={self.X: image})
+        return self.sess.run(self.pred, feed_dict={self.X: image})
