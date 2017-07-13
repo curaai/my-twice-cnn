@@ -4,10 +4,11 @@ import numpy as np
 import os
 import json
 import requests
+from scipy.misc import imread
 
 face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
-client_id = ""
-client_secret = ""
+client_id = "NgyeOZXlBMA1XytCZjZf"
+client_secret = "cGSR9XEp5b"
 url = "https://openapi.naver.com/v1/vision/face"
 headers = {'X-Naver-Client-Id': client_id, 'X-Naver-Client-Secret': client_secret }
 
@@ -30,6 +31,18 @@ def convert_video(input_path, output_path):
                 continue
             image = np.array(Image.fromarray(image).crop(faces))
             cv2.imwrite(output_path + "frame%d.jpg" % count, image)
+
+
+def face_detect_crop(input_path, output_path):
+    image = cv2.imread(input_path)
+    array = imread(input_path)
+    faces = face_detect_by_naver(array)
+    image = np.array(Image.fromarray(image).crop(faces))
+    cv2.imwrite(output_path, image)
+
+    image = Image.open(output_path)
+    image = image.resize((32, 32), Image.ANTIALIAS)
+    image.save(output_path)
 
 
 def face_detect(image):
@@ -75,7 +88,7 @@ def image_resize(path):
         image.save(file)
 
 if __name__ == '__main__':
-    pass
+    face_detect_crop("C:/Users/dsm2016/Desktop/my.jpg", 'C:/Users/dsm2016/Desktop/me.jpg')
 
     # first_video_path = "C:/Users/dsm2016/Pictures/Camera Roll/WIN_20170711_14_16_29_Pro.mp4"
     # save_path = "C:/Users/dsm2016/Pictures/faces/4/"

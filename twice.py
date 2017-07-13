@@ -19,17 +19,20 @@ class Twice:
         with tf.variable_scope('twice'):
             self.X = tf.placeholder(tf.float32, [None, 32, 32, 3])
             self.label = tf.placeholder(tf.float32, [None, twice_input.CLASSES])
+            self.keep_prob = tf.placeholder(tf.float32)
             # images = 32 x 32 x 3
 
             # convolution layer 1
             kernel1 = tf.Variable(tf.random_normal([5, 5, 3, 32], stddev=5e-2), name='kern1')
             bias1 = tf.Variable(tf.random_normal([32]), 'bisa1')
-            conv1 = tf.nn.conv2d(self.X, kernel1, [1, 1, 1, 1], padding='SAME')
+            conv1 = tf.nn.conv2d(self.X, kernel1, [1, 1, 1, 1], padding='SAME', )
             conv1 = tf.nn.bias_add(conv1, bias1)
 
             conv1 = tf.nn.relu(conv1, name='conv1')
 
             norm1 = tf.nn.lrn(conv1, 4, alpha=0.001 / 9.0, beta=0.75, name='norm1')
+
+            norm1 = tf.nn.dropout(norm1, keep_prob=self.keep_prob)
 
             '''
             conv1 result : 32 x 32 x 32
@@ -47,6 +50,8 @@ class Twice:
                               name='norm2')
             pool2 = tf.nn.max_pool(norm2, ksize=[1, 2, 2, 1],
                                    strides=[1, 2, 2, 1], padding='SAME', name='pool2')
+            pool2 = tf.nn.dropout(pool2, keep_prob=self.keep_prob)
+
             '''
             conv2 result : 32 x 32 x 64
             pool2 result : 16 x 16 x 64
@@ -64,6 +69,8 @@ class Twice:
                               name='norm3')
             pool3 = tf.nn.max_pool(norm3, ksize=[1, 2, 2, 1],
                                    strides=[1, 2, 2, 1], padding='SAME', name='pool3')
+            pool3 = tf.nn.dropout(pool3, keep_prob=self.keep_prob)
+
             '''
             conv2 result : 16 x 16 x 128
             pool2 result : 8 x 8 x 128
@@ -80,6 +87,8 @@ class Twice:
 
             local4 = tf.nn.relu(local4, name='local4')
 
+            local4 = tf.nn.dropout(local4, keep_prob=self.keep_prob)
+
             '''
             reshape result : 8192
             kernel3 result : 1024
@@ -89,6 +98,8 @@ class Twice:
             kernel5 = tf.get_variable('kern5', shape=[1024, 128],
                                       initializer=tf.contrib.layers.xavier_initializer())
             local5 = tf.nn.relu(tf.matmul(local4, kernel5))
+
+            local5 = tf.nn.dropout(local5, keep_prob=self.keep_prob)
 
             # final layer 5
             final6 = tf.get_variable('final6', shape=[128, twice_input.CLASSES],
@@ -108,13 +119,13 @@ class Twice:
             tf.argmax(self.logit, 1), tf.argmax(self.label, 1))
         self.accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 
-    def train(self, image, label):
+    def train(self, image, label, keep_prob):
         return self.sess.run([self.cost, self.optimizer], feed_dict={
-            self.X: image, self.label: label
+            self.X: image, self.label: label, self.keep_prob: keep_prob
         })
 
-    def get_accuracy(self, image, label):
-        return self.sess.run(self.accuracy, feed_dict={self.X: image, self.label: label})
+    def get_accuracy(self, image, label, keep_prob=1.0):
+        return self.sess.run(self.accuracy, feed_dict={self.X: image, self.label: label, self.keep_prob: keep_prob})
 
-    def predict(self, image):
-        return self.sess.run(self.pred, feed_dict={self.X: image})
+    def predict(self, image, keep_prob=1.0):
+        return np.argmax(self.sess.run(self.pred, feed_dict={self.X: image, self.keep_prob: keep_prob}), axis=1)
