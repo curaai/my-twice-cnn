@@ -17,10 +17,10 @@ class Twice:
 
     def inference(self):
         with tf.variable_scope('twice'):
-            self.X = tf.placeholder(tf.float32, [None, 32, 32, 3])
+            self.X = tf.placeholder(tf.float32, [None, 96, 96, 3])
             self.label = tf.placeholder(tf.float32, [None, twice_input.CLASSES])
             self.keep_prob = tf.placeholder(tf.float32)
-            # images = 32 x 32 x 3
+            # images = 96 x 96 x 3
 
             # convolution layer 1
             kernel1 = tf.Variable(tf.random_normal([5, 5, 3, 32], stddev=5e-2), name='kern1')
@@ -32,7 +32,10 @@ class Twice:
 
             norm1 = tf.nn.lrn(conv1, 4, alpha=0.001 / 9.0, beta=0.75, name='norm1')
 
-            norm1 = tf.nn.dropout(norm1, keep_prob=self.keep_prob)
+            pool1 = tf.nn.max_pool(norm1, ksize=[1, 3, 3, 1],
+                                   strides=[1, 3, 3, 1], padding='SAME', name='pool2')
+
+            # pool1 = tf.nn.dropout(pool1, keep_prob=self.keep_prob)
 
             '''
             conv1 result : 32 x 32 x 32
@@ -41,7 +44,7 @@ class Twice:
             # convolution layer 2
             kernel2 = tf.Variable(tf.random_normal([5, 5, 32, 64], stddev=5e-2), name='kern2')
             bias2 = tf.Variable(tf.random_normal([64]), name='bias2')
-            conv2 = tf.nn.conv2d(norm1, kernel2, [1, 1, 1, 1], padding='SAME')
+            conv2 = tf.nn.conv2d(pool1, kernel2, [1, 1, 1, 1], padding='SAME')
             conv2 = tf.nn.bias_add(conv2, bias2)
 
             conv2 = tf.nn.relu(conv2, name='conv2')
@@ -50,7 +53,7 @@ class Twice:
                               name='norm2')
             pool2 = tf.nn.max_pool(norm2, ksize=[1, 2, 2, 1],
                                    strides=[1, 2, 2, 1], padding='SAME', name='pool2')
-            pool2 = tf.nn.dropout(pool2, keep_prob=self.keep_prob)
+            # pool2 = tf.nn.dropout(pool2, keep_prob=self.keep_prob)
 
             '''
             conv2 result : 32 x 32 x 64
@@ -69,7 +72,7 @@ class Twice:
                               name='norm3')
             pool3 = tf.nn.max_pool(norm3, ksize=[1, 2, 2, 1],
                                    strides=[1, 2, 2, 1], padding='SAME', name='pool3')
-            pool3 = tf.nn.dropout(pool3, keep_prob=self.keep_prob)
+            # pool3 = tf.nn.dropout(pool3, keep_prob=self.keep_prob)
 
             '''
             conv2 result : 16 x 16 x 128
@@ -79,9 +82,9 @@ class Twice:
 
             # local layer 4
             reshape = tf.reshape(pool3, [-1, 8 * 8 * 128])
-            kernel4 = tf.get_variable("kern4", shape=[8 * 8 * 128, 1024],
+            kernel4 = tf.get_variable("kern4", shape=[8 * 8 * 128, 2048],
                                       initializer=tf.contrib.layers.xavier_initializer())
-            bias4 = tf.Variable(tf.random_normal([1024]), name='bias4')
+            bias4 = tf.Variable(tf.random_normal([2048]), name='bias4')
             local4 = tf.matmul(reshape, kernel4)
             local4 = tf.nn.bias_add(local4, bias4)
 
@@ -91,18 +94,18 @@ class Twice:
 
             '''
             reshape result : 8192
-            kernel3 result : 1024
+            kernel3 result : 2048
             '''
 
             # local layer 5
-            kernel5 = tf.get_variable('kern5', shape=[1024, 128],
+            kernel5 = tf.get_variable('kern5', shape=[2048, 512],
                                       initializer=tf.contrib.layers.xavier_initializer())
             local5 = tf.nn.relu(tf.matmul(local4, kernel5))
 
             local5 = tf.nn.dropout(local5, keep_prob=self.keep_prob)
 
             # final layer 5
-            final6 = tf.get_variable('final6', shape=[128, twice_input.CLASSES],
+            final6 = tf.get_variable('final6', shape=[512, twice_input.CLASSES],
                                      initializer=tf.contrib.layers.xavier_initializer())
             logit = tf.matmul(local5, final6)
 

@@ -3,7 +3,7 @@ import os
 from scipy.misc import imread
 from sklearn.utils import shuffle
 
-IMAGE_SIZE  = 3072
+IMAGE_SIZE  = 9216
 CLASSES     = 4
 
 
@@ -49,16 +49,17 @@ class DataSet:
         self.epoch_complete = 0
 
     def next_batch(self, batch_size):
-        start = self.index_in_epoch
-        self.index_in_epoch += batch_size
-
-        if self.index_in_epoch > self.num_examples:
-            self.epoch_complete += 1
-            start = 0
-            self.index_in_epoch = batch_size
-
-        end = self.index_in_epoch
-        return self.images[start:end], self.labels[start:end]
+        mask = np.random.choice(self.num_examples, batch_size)
+        # start = self.index_in_epoch
+        # self.index_in_epoch += batch_size
+        #
+        # if self.index_in_epoch > self.num_examples:
+        #     self.epoch_complete += 1
+        #     start = 0
+        #     self.index_in_epoch = batch_size
+        #
+        # end = self.index_in_epoch
+        return self.images[mask], self.labels[mask]
 
 
 def read_data_sets(data_path, test=0):

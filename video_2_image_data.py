@@ -13,7 +13,8 @@ url = "https://openapi.naver.com/v1/vision/face"
 headers = {'X-Naver-Client-Id': client_id, 'X-Naver-Client-Secret': client_secret }
 
 count = 0
-
+IMAGE_SIZE = 96
+IMAGE_LIMIT = 1300
 
 def convert_video(input_path, output_path):
     global count
@@ -21,7 +22,7 @@ def convert_video(input_path, output_path):
     vid = cv2.VideoCapture(input_path)
     success, image = vid.read()
     success = True
-    while success and count < 1500:
+    while success and count < IMAGE_LIMIT:
         count += 1
 
         success, image = vid.read()
@@ -41,7 +42,7 @@ def face_detect_crop(input_path, output_path):
     cv2.imwrite(output_path, image)
 
     image = Image.open(output_path)
-    image = image.resize((32, 32), Image.ANTIALIAS)
+    image = image.resize((IMAGE_SIZE, IMAGE_SIZE), Image.ANTIALIAS)
     image.save(output_path)
 
 
@@ -63,7 +64,7 @@ def face_detect(image):
 
 def face_detect_by_naver(image):
     cv2.imwrite('temp.jpg', image)
-    byte_image = {'image':open('temp.jpg', 'rb')}
+    byte_image = {'image': open('temp.jpg', 'rb')}
     response = requests.post(url, files=byte_image, headers=headers)
     rescode = response.status_code
     if rescode == 200:
@@ -84,12 +85,9 @@ def image_resize(path):
     files = [path + '/' + directory + '/' + file for directory in os.listdir(path) for file in os.listdir(path + '/' + directory)]
     for file in files:
         image = Image.open(file)
-        image = image.resize((32, 32), Image.ANTIALIAS)
+        image = image.resize((IMAGE_SIZE, IMAGE_SIZE), Image.ANTIALIAS)
         image.save(file)
 
 if __name__ == '__main__':
-    face_detect_crop("C:/Users/dsm2016/Desktop/my.jpg", 'C:/Users/dsm2016/Desktop/me.jpg')
-
-    # first_video_path = "C:/Users/dsm2016/Pictures/Camera Roll/WIN_20170711_14_16_29_Pro.mp4"
-    # save_path = "C:/Users/dsm2016/Pictures/faces/4/"
-    # convert_video(first_video_path, save_path)
+    face_detect_crop("C:/Users/dsm2016/Desktop/go.jpg", 'C:/Users/dsm2016/Desktop/test1.jpg')
+    face_detect_crop("C:/Users/dsm2016/Desktop/park.jpg", 'C:/Users/dsm2016/Desktop/test2.jpg')
