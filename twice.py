@@ -17,7 +17,7 @@ class Twice:
 
     def inference(self):
         with tf.variable_scope('twice'):
-            self.X = tf.placeholder(tf.float32, [None, 96, 96, 3])
+            self.X = tf.placeholder(tf.float32, [None, 32, 32, 3])
             self.label = tf.placeholder(tf.float32, [None, twice_input.CLASSES])
             self.keep_prob = tf.placeholder(tf.float32)
             # images = 96 x 96 x 3
@@ -32,11 +32,6 @@ class Twice:
 
             norm1 = tf.nn.lrn(conv1, 4, alpha=0.001 / 9.0, beta=0.75, name='norm1')
 
-            pool1 = tf.nn.max_pool(norm1, ksize=[1, 3, 3, 1],
-                                   strides=[1, 3, 3, 1], padding='SAME', name='pool2')
-
-            # pool1 = tf.nn.dropout(pool1, keep_prob=self.keep_prob)
-
             '''
             conv1 result : 32 x 32 x 32
             '''
@@ -44,7 +39,7 @@ class Twice:
             # convolution layer 2
             kernel2 = tf.Variable(tf.random_normal([5, 5, 32, 64], stddev=5e-2), name='kern2')
             bias2 = tf.Variable(tf.random_normal([64]), name='bias2')
-            conv2 = tf.nn.conv2d(pool1, kernel2, [1, 1, 1, 1], padding='SAME')
+            conv2 = tf.nn.conv2d(norm1, kernel2, [1, 1, 1, 1], padding='SAME')
             conv2 = tf.nn.bias_add(conv2, bias2)
 
             conv2 = tf.nn.relu(conv2, name='conv2')
@@ -53,7 +48,6 @@ class Twice:
                               name='norm2')
             pool2 = tf.nn.max_pool(norm2, ksize=[1, 2, 2, 1],
                                    strides=[1, 2, 2, 1], padding='SAME', name='pool2')
-            # pool2 = tf.nn.dropout(pool2, keep_prob=self.keep_prob)
 
             '''
             conv2 result : 32 x 32 x 64
@@ -72,7 +66,6 @@ class Twice:
                               name='norm3')
             pool3 = tf.nn.max_pool(norm3, ksize=[1, 2, 2, 1],
                                    strides=[1, 2, 2, 1], padding='SAME', name='pool3')
-            # pool3 = tf.nn.dropout(pool3, keep_prob=self.keep_prob)
 
             '''
             conv2 result : 16 x 16 x 128
@@ -123,7 +116,7 @@ class Twice:
         self.accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 
     def train(self, image, label, keep_prob):
-        return self.sess.run([self.cost, self.optimizer], feed_dict={
+        return self.sess.run([self.cost, self.pred,  self.optimizer], feed_dict={
             self.X: image, self.label: label, self.keep_prob: keep_prob
         })
 

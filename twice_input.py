@@ -1,5 +1,6 @@
 import numpy as np
 import os
+import pickle
 from scipy.misc import imread
 from sklearn.utils import shuffle
 
@@ -7,7 +8,7 @@ IMAGE_SIZE  = 9216
 CLASSES     = 4
 
 
-def get_feed_data(path):
+def get_feed_data(path, flag):
     directories = os.listdir(path)
     files = [path + '/' + directory + '/' + file for directory in directories
              for file in os.listdir(path + '/' + directory)]
@@ -31,8 +32,41 @@ def get_feed_data(path):
     images = np.array(images)
     labels = np.array(labels)
 
-    images, labels = shuffle(images, labels, random_state=4)
+    if flag:
+        images, labels = shuffle(images, labels, random_state=4)
+
     return images, labels
+
+
+def dump_image(input_path, output_path):
+    directories = os.listdir(input_path)
+    files = [input_path + '/' + directory + '/' + file for directory in directories
+             for file in os.listdir(input_path + '/' + directory)]
+
+    images = list()
+    labels = list()
+    length = [len(os.listdir(input_path + '/' + directory)) for directory in directories]
+
+    for index in range(len(files)):
+        img = imread(files[index])
+
+        label = np.zeros(CLASSES)
+        for i in range(CLASSES):
+            if index < sum(length[:i+1]):
+                label[i] = 1
+                break
+
+        images.append(img)
+        labels.append(label)
+
+    images = np.array(images)
+    labels = np.array(labels)
+
+    images, labels = shuffle(images, labels, random_state=4)
+    data = [images, labels]
+    f = open(output_path, 'wb')
+    pickle.dump(data, f)
+    f.close()
 
 
 class DataSet:
@@ -62,13 +96,18 @@ class DataSet:
         return self.images[mask], self.labels[mask]
 
 
-def read_data_sets(data_path, test=0):
+# if data was dumped True
+def read_data_sets(is_dumped, data_path, test=0):
     class DataSets(object):
         pass
 
     data_sets = DataSets()
 
-    images, labels = get_feed_data(data_path)
+    if is_dumped:
+        f = open(data_path, 'rb')
+        images, labels = pickle.load(f)
+    else:
+        images, labels = get_feed_data(data_path, False)
 
     test_images = images[:test]
     test_labels = labels[:test]
@@ -81,4 +120,5 @@ def read_data_sets(data_path, test=0):
 
     return data_sets
 
-
+if __name__ == '__main__':
+    dump_image('D:/Data/cnn/faces', 'dump.txt')
