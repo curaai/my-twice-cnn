@@ -1,11 +1,10 @@
 import cv2
-import PIL.Image
+from PIL import Image
 import numpy as np
 import os
 import json
 import requests
 from scipy.misc import imread
-from wand.image import Image
 
 face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
 client_id = "NgyeOZXlBMA1XytCZjZf"
@@ -32,7 +31,7 @@ def convert_video(input_path, output_path):
             faces = face_detect(image)
             if faces == -1:
                 continue
-            image = np.array(PIL.Image.fromarray(image).crop(faces))
+            image = np.array(Image.fromarray(image).crop(faces))
             cv2.imwrite(output_path + "frame%d.jpg" % count, image)
 
 
@@ -40,11 +39,11 @@ def face_detect_crop(input_path, output_path):
     image = cv2.imread(input_path)
     array = imread(input_path)
     faces = face_detect_by_naver(array)
-    image = np.array(PIL.Image.fromarray(image).crop(faces))
+    image = np.array(Image.fromarray(image).crop(faces))
     cv2.imwrite(output_path, image)
 
-    image = PIL.Image.open(output_path)
-    image = image.resize((IMAGE_SIZE, IMAGE_SIZE), PIL.Image.ANTIALIAS)
+    image = Image.open(output_path)
+    image = image.resize((IMAGE_SIZE, IMAGE_SIZE), Image.ANTIALIAS)
     image.save(output_path)
 
 
@@ -92,12 +91,5 @@ def image_resize(path):
 
 
 def flop_image(path, output_path):
-    with Image(filename=path) as original:
-        temp = original.clone()
-        temp.flop()
-        temp.save(filename=output_path)
-
-if __name__ == '__main__':
-    # convert_video('C:/Users/dsm2016/Pictures/Camera Roll/me.mp4', 'C:/Users/dsm2016/Desktop/1/')
-    face_detect_crop('C:/Users/dsm2016/Pictures/Camera Roll/test.jpg', 'C:/Users/dsm2016/Desktop/test7.jpg')
-    # image_resize('D:/Data/cnn/faces')
+    img = Image.open(path)
+    img.transpose(Image.FLIP_LEFT_RIGHT).save(output_path)
