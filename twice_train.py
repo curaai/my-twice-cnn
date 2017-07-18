@@ -7,28 +7,29 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 
 if __name__ == '__main__':
-    path = 'dump.txt'
-    data = twice_input.read_data_sets(True, path, 100)
+    path = 'twice.txt'
+    data = twice_input.read_data_sets(True, path, 75)
 
     BATCH_SIZE = 15
     before_epoch = 0
-    keep_prob = 0.5
+    keep_prob = 1
 
     with tf.Session() as sess:
         m = twice.Twice(sess, 0.001)
         sess.run(tf.global_variables_initializer())
+        writer = tf.summary.FileWriter('./board/twice_board', graph=sess.graph)
         print('Learning Start !!!')
 
         for i in range(1000):
             x_batch, y_batch = data.train.next_batch(BATCH_SIZE)
 
-            c, p, _ = m.train(x_batch, y_batch, keep_prob)
-            if i % 40 == 0:
-                x, y = data.test.next_batch(BATCH_SIZE)
-                print('Epoch : {}, Accuracy : {}, loss : {}'.format(data.train.epoch_complete,
-                                                                    m.get_accuracy(x, y),
-                                                                    c))
+            c, p, s, _ = m.train(x_batch, y_batch, keep_prob)
 
-        m.saver.save(sess, 'save/another.ckpt')
+            if i % 40 == 0:
+                writer.add_summary(s, float(i))
+                writer.flush()
+                print("loss :", c, ", epoch :", data.train.epoch_complete)
+
+        m.saver.save(sess, 'save/twice_third.ckpt')
         print('model was saved')
         print('Learning Finish')

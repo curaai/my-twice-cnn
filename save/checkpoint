@@ -1,2 +1,2 @@
-model_checkpoint_path: "another.ckpt"
-all_model_checkpoint_paths: "another.ckpt"
+model_checkpoint_path: "twice_third.ckpt"
+all_model_checkpoint_paths: "twice_third.ckpt"

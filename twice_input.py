@@ -4,11 +4,11 @@ import pickle
 from scipy.misc import imread
 from sklearn.utils import shuffle
 
-IMAGE_SIZE  = 9216
-CLASSES     = 4
+IMAGE_SIZE  = 3072
+CLASSES     = 3
 
 
-def get_feed_data(path, flag):
+def get_feed_data(path):
     directories = os.listdir(path)
     files = [path + '/' + directory + '/' + file for directory in directories
              for file in os.listdir(path + '/' + directory)]
@@ -32,9 +32,7 @@ def get_feed_data(path, flag):
     images = np.array(images)
     labels = np.array(labels)
 
-    if flag:
-        images, labels = shuffle(images, labels, random_state=4)
-
+    images, labels = shuffle(images, labels, random_state=4)
     return images, labels
 
 
@@ -79,20 +77,16 @@ class DataSet:
         self.labels = labels
 
         self.num_examples = images.shape[0]
-        self.index_in_epoch = 0
+        self.batch_count = 0
         self.epoch_complete = 0
 
     def next_batch(self, batch_size):
         mask = np.random.choice(self.num_examples, batch_size)
-        # start = self.index_in_epoch
-        # self.index_in_epoch += batch_size
-        #
-        # if self.index_in_epoch > self.num_examples:
-        #     self.epoch_complete += 1
-        #     start = 0
-        #     self.index_in_epoch = batch_size
-        #
-        # end = self.index_in_epoch
+
+        if self.batch_count * batch_size > self.num_examples:
+            self.epoch_complete += 1
+            self.batch_count = 0
+
         return self.images[mask], self.labels[mask]
 
 
@@ -107,7 +101,7 @@ def read_data_sets(is_dumped, data_path, test=0):
         f = open(data_path, 'rb')
         images, labels = pickle.load(f)
     else:
-        images, labels = get_feed_data(data_path, False)
+        images, labels = get_feed_data(data_path)
 
     test_images = images[:test]
     test_labels = labels[:test]
@@ -119,6 +113,3 @@ def read_data_sets(is_dumped, data_path, test=0):
     data_sets.train = DataSet(train_images, train_labels)
 
     return data_sets
-
-if __name__ == '__main__':
-    dump_image('D:/Data/cnn/faces', 'dump.txt')
