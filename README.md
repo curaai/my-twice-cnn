@@ -11,4 +11,4 @@
 학습결과 : 인터넷에 있는 사진 9개 정도 를 넣어보니 2개 틀리네요.
 
 tensorboard 
-![tensorboard](./board/tensorboard.png)
+![tensorboard](board/tensorboard.png)
