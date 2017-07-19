@@ -25,9 +25,10 @@ if __name__ == '__main__':
 
             c, p, s, _ = m.train(x_batch, y_batch, keep_prob)
 
-            if i % 40 == 0:
+            if i % 10 == 0:
                 writer.add_summary(s, float(i))
-                writer.flush()
+
+            if i % 40 == 0:
                 print("loss :", c, ", epoch :", data.train.epoch_complete)
 
         m.saver.save(sess, 'save/twice_third.ckpt')

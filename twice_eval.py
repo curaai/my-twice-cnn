@@ -17,7 +17,7 @@ if __name__ == '__main__':
 
     with tf.Session() as sess:
         m = twice.Twice(sess, 0.001)
-        m.saver.restore(sess, 'save/twice_second.ckpt')
+        m.saver.restore(sess, 'save/twice_third.ckpt')
 
         path = 'C:/Users/dsm2016/Desktop/faces/twice'
         list = os.listdir(path)
