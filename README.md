@@ -5,11 +5,9 @@
 
 참고링크들
 > https://github.com/hohoins/ml/tree/master/ImageBinaryGenerator 
-<br>
-> http://yujuwon.tistory.com/entry/TENSORFLOWCNNClassification
-<br>
-> https://www.slideshare.net/leeseungeun/cnn-vgg-72164295
-<br>
+http://yujuwon.tistory.com/entry/TENSORFLOWCNNClassification
+https://www.slideshare.net/leeseungeun/cnn-vgg-72164295
+
 
 학습결과 : 인터넷에 있는 사진 9개 정도 를 넣어보니 2개 틀리네요.
 
