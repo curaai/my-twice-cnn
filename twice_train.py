@@ -8,9 +8,9 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 if __name__ == '__main__':
     path = 'twice.txt'
-    data = twice_input.read_data_sets(True, path, 75)
+    data = twice_input.read_data_sets(True, path)
 
-    BATCH_SIZE = 15
+    BATCH_SIZE = 20
     before_epoch = 0
     keep_prob = 1
 
@@ -25,7 +25,7 @@ if __name__ == '__main__':
 
             c, p, s, _ = m.train(x_batch, y_batch, keep_prob)
 
-            if i % 10 == 0:
+            if i % 5 == 0:
                 writer.add_summary(s, float(i))
 
             if i % 40 == 0:

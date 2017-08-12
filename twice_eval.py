@@ -21,6 +21,14 @@ if __name__ == '__main__':
 
         path = 'C:/Users/dsm2016/Desktop/faces/twice'
         list = os.listdir(path)
+        pre = ''
         for x in list:
             img = imread(path + '/' + x).reshape(1, 32, 32, 3) / 255
-            print('name :', x, ', predict :', m.predict(img))
+            result = m.predict(img)
+            if result == 0:
+                pre = '정연'
+            elif result == 1:
+                pre = '모모'
+            else:
+                pre = '나연'
+            print('name :', x, ', predict :', pre)

@@ -82,6 +82,7 @@ class DataSet:
 
     def next_batch(self, batch_size):
         mask = np.random.choice(self.num_examples, batch_size)
+        self.batch_count += 1
 
         if self.batch_count * batch_size > self.num_examples:
             self.epoch_complete += 1
